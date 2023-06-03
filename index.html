@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <link rel="stylesheet" href="./dist/master.css" />
+  <!-- GOOGLE FONTS -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Almarai:wght@300;400;700;800&display=swap" rel="stylesheet" />
+  <!--// GOOGLE FONTS //-->
+</head>
+
+<body>
+  <!-- start world cup website  -->
+  <!-- st
+    rt header -->
+  <div class="header bg-rose-900 border-b-30 border-rose-950 h-72">
+    <div class="bg-header-pattern h-full w-full">
+    </div>
+    <div class="container mx-auto flex justify-between items-center absolute top-0 z-10 inset-2/4 -translate-x-1/2 p-5">
+      <img class="w-32 mt-20 drop-shadow-3xl-75%" src="../image/logo.png" alt="" />
+      <h1 class="text-8xl text-white font-extrabold drop-shadow-3xl-75%">كأس <br> العالم</h1>
+    </div>
+    <div class="w-full h-10 bg-white rotate-3 translate-y-2 md:rotate-2 lg:rotate-1"></div>
+  </div>
+  <div class="container mx-auto grid place-items-center">
+    <img class="w-72 p-5 md:w-96 mt-16" src="../image/qatar-word.png" alt="" />
+  </div>
+  <!-- end header -->
+  <!-- start groups -->
+  <div class="Groups container mx-auto p-5">
+    <div class="text-right text-4xl font-extrabold border-b border-gray-400 p-2">المجموعات</div>
+    <div class="Group-content grid gap-7 grid-cols-1 md:grid-cols-2 w-full p-5">
+    </div>
+  </div>
+  <!-- end groups -->
+  <!-- start matches -->
+  <div class="matches-section">
+    <div class="container mx-auto px-5">
+      <div class="text-right text-4xl font-extrabold border-b border-gray-400 p-2 mb-10">المباريات</div>
+      <div class="matches mb-10 ">
+        <!-- start match -->
+        <!-- end match -->
+      </div>
+    </div>
+  </div>
+  <!-- end matches -->
+  <!-- end world cup website  -->
+  <!-- js folder -->
+</body>
+<script src="./main.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.4.1/axios.min.js"></script>
+<script>
+  // "https://api.football-data.org/v4/competitions/2000/matches"
+
+
+  //--//--  STANDINGS --// -- //
+  const token = "ec437f48c2bb4c02bf42f74a46ff7c78";
+  let groups = document.querySelector(".Group-content");
+  var baseUrl = "https://api.football-data.org/v4/competitions/2000";
+
+
+  (() => {
+    const standingsUrl = `${baseUrl}/standings`
+    axios.get(standingsUrl, {
+        headers: {
+          "X-Auth-Token": token
+        }
+      })
+      .then((response) => {
+        if (response) {
+          groups.innerHTML = "";
+          let contentGroups = "";
+          let standings = response.data.standings;
+          for (standing of standings) {
+
+
+            let contentTeam = "";
+            let teams = standing.table;
+            for (team of teams) {
+
+              // first of all collect each 4 team together to set it in tbody
+              contentTeam += `
+            <!--start team -->
+                <tr class="border-b last:border-b-0 border-gray-200">
+                  <td class="flex items-center justify-start py-2">
+                    <img class="object-cover shadow-lg border border-gray-200 w-8 h-8 mx-5 overflow-hidden rounded-full" src=${team.team.crest} alt=""/>
+                    <span class="font-bold text-lg">${team.team.tla}</span>
+                  </td>
+                  <td class="py-2">${team.won}</td>
+                  <td class="py-2">${team.lost}</td>
+                  <td class="py-2">${team.draw}</td>
+                  <td class="py-2">${team.points}</td>
+                </tr>
+                <!--end team -->
+            `;
+            }
+
+            // then create 8 groups,each groups of groups contain 4 teams from top loop
+            contentGroups += `
+              <!-- start group -->
+          <div class="group  shadow-lg border border-gray-200 rounded-lg overflow-hidden text-center">
+            <div class="name bg-rose-700 text-white py-2  font-bold ">${standing.group}</div>
+            <table class="w-full">
+              <thead class="bg-rose-900 text-white">
+                <td class="capitalize text-center px-4">team</td>
+                <td class="capitalize text-center px-4">w</td>
+                <td class="capitalize text-center px-4">l</td>
+                <td class="capitalize text-center px-4">d</td>
+                <td class="capitalize text-center px-4">pts</td>
+              </thead>
+              <tbody>
+                ${contentTeam}
+              </tbody>
+            </table>
+          </div>
+          <!-- end group -->
+          `
+          }
+          groups.innerHTML = contentGroups;
+        }
+      }).catch((error => {
+        groups.innerHTML = "the cors prevent getting data";
+        groups.style.cssText = `text-align: center;
+    text-transform: capitalize;
+    font-size: 30px;
+    font-weight: 600;
+    color: red;`;
+      }))
+  })();
+  //--//--  MATCHES --// -- //
+  let matchesContainer = document.querySelector(".matches");
+  (() => {
+    const matchesUrl = `${baseUrl}/matches`;
+    axios.get(matchesUrl).then(response => {
+      let matches = response.data.matches;
+      matchesContainer.innerHTML = "";
+      let matchesContent = "";
+      console.log(matches[0])
+      for (match of matches) {
+        // this because the are matches whose parties have not yet been determined
+        // like quarter and semi-finals
+        if (match.group == null) {
+          break;
+        }
+        let time = new Date(match.utcDate);
+        matchesContent += `
+        <!-- start match -->
+        <div class="match border-4 border-rose-900 mt-7 shadow-xl flex rounded-full overflow-hidden">
+          <div
+            class="homeTeam border-r-4 border-rose-900 py-5 bg-rose-800 w-1/4 flex flex-col justify-center items-center">
+            <img class="w-9 rounded-full object-cover h-8 w-8" src=${match.homeTeam.crest} alt=""/>
+            <span class="text-white capitalize mt-2">${match.homeTeam.tla}</span>
+          </div>
+          <div class="details w-2/4 text-center py-5 font-bold capitalize">
+            <div class="grid grid-cols-3">
+              <div class="home-team my-auto">
+                ${match.score.fullTime.home ?? "-"}
+              </div>
+              <div>
+                <div class="group">${match.group}</div>
+                <div class="text-2xl">x</div>
+                <div class="date">${time.getHours()} : 0${time.getMinutes()}</div>
+              </div>
+              <div class="away-team my-auto">
+                ${match.score.fullTime.away ?? "-"}
+              </div>
+            </div>
+          </div>
+          <div
+            class="homeTeam border-l-4 border-rose-900 py-5 bg-rose-800 w-1/4 flex flex-col justify-center items-center">
+            <img class="rounded-full object-cover h-8 w-8" src=${match.awayTeam.crest} alt=""/>
+            <span class="text-white capitalize mt-2">${match.awayTeam.tla}</span>
+          </div>
+        </div>
+        <!-- end match -->
+        `;
+      }
+      matchesContainer.innerHTML = matchesContent;
+    }).catch((error => {
+      matchesContainer.innerHTML = "the cors prevent getting data";
+      matchesContainer.style.cssText = `text-align: center;
+    text-transform: capitalize;
+    font-size: 30px;
+    font-weight: 600;
+    color: red;`;
+    }))
+  })()
+</script>
+
+</html>
